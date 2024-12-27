@@ -36,22 +36,32 @@ forge test
 
 ## Usage
 
+### Install
+
+```shell
+forge install
+```
+
+```shell
+go mod tidy
+```
+
 ### Build
 
 ```shell
-$ forge build
+forge build
 ```
 
 ### Test
 
 ```shell
-$ forge test
+forge test
 ```
 
 ### Format
 
 ```shell
-$ forge fmt
+forge fmt
 ```
 
 ## Feedback
