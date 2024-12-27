@@ -1,4 +1,4 @@
-## tea.xyz: GPG EdDSA precompile
+# tea.xyz: GPG EdDSA precompile
 
 `test/GPG.t.sol` showcases the use of a GPG EdDSA precompile.
 
