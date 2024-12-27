@@ -4,7 +4,6 @@ pragma solidity ^0.8.13;
 import {Test} from "forge-std/Test.sol";
 
 contract ClaimableOwnership is Test {
-
     bytes32 public constant MESSAGE = hex"ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff";
 
     address public owner;
@@ -15,12 +14,12 @@ contract ClaimableOwnership is Test {
     }
 
     function claim(bytes calldata publicKey, bytes calldata signature) external {
-
         require(keccak256(publicKey) == publicKeyHash, "Invalid public key");
         require(owner == address(0), "Ownership claimed");
 
         // Build precompile calldata
-        bytes memory precompileCalldata = abi.encodePacked(MESSAGE, publicKey.length, publicKey, signature.length, signature);
+        bytes memory precompileCalldata =
+            abi.encodePacked(MESSAGE, publicKey.length, publicKey, signature.length, signature);
 
         // Simulate precompile call
         string[] memory inputs = new string[](4);
@@ -29,7 +28,7 @@ contract ClaimableOwnership is Test {
         inputs[2] = "precompile/run/main.go";
         inputs[3] = vm.toString(precompileCalldata);
         bytes memory result = vm.ffi(inputs);
-        
+
         bool verified = abi.decode(result, (bool));
         require(verified, "Verification failed");
 
@@ -38,9 +37,8 @@ contract ClaimableOwnership is Test {
 }
 
 contract GPGTest is Test {
-
     ClaimableOwnership target;
-    
+
     address public alice = address(0x123);
 
     function setUp() public {
@@ -57,7 +55,6 @@ contract GPGTest is Test {
         target = new ClaimableOwnership(keccak256(pubKey));
     }
 
-
     function test_precompile() public {
         // Get precompile inputs
         string[] memory inputs = new string[](3);
@@ -68,13 +65,10 @@ contract GPGTest is Test {
 
         bytes memory result = vm.ffi(inputs);
         (bytes memory publicKey, bytes memory signature) = abi.decode(result, (bytes, bytes));
-        
+
         vm.prank(alice);
-        target.claim(
-            publicKey,
-            signature
-        );
-        
+        target.claim(publicKey, signature);
+
         assertEq(target.owner(), alice);
     }
 }
