@@ -16,6 +16,7 @@ contract ClaimableOwnership is Test {
 
     function claim(bytes calldata publicKey, bytes calldata signature) external {
 
+        require(keccak256(publicKey) == publicKeyHash, "Invalid public key");
         require(owner == address(0), "Ownership claimed");
 
         // Build precompile calldata

@@ -1,17 +1,38 @@
-## Foundry
+## tea.xyz: GPG EdDSA precompile
 
-**Foundry is a blazing fast, portable and modular toolkit for Ethereum application development written in Rust.**
+`test/GPG.t.sol` showcases the use of a GPG EdDSA precompile.
 
-Foundry consists of:
+`ClaimableOwnership` is a contract with a hardcoded `MESSAGE` and immutable `bytes32 publicKeyHash` variable. It contains a `claim` function:
 
--   **Forge**: Ethereum testing framework (like Truffle, Hardhat and DappTools).
--   **Cast**: Swiss army knife for interacting with EVM smart contracts, sending transactions and getting chain data.
--   **Anvil**: Local Ethereum node, akin to Ganache, Hardhat Network.
--   **Chisel**: Fast, utilitarian, and verbose solidity REPL.
+```solidity
+function claim(bytes calldata publicKey, bytes calldata signature) external;
+```
 
-## Documentation
+This function lets an actor claim ownership of the contract by presenting the pre-image of publicKeyHash (i.e. `keccak256(publicKey) == publicKeyHash`) and a signature produced by signing the hardcoded `MESSAGE`.
 
-https://book.getfoundry.sh/
+The public key is expected to be an (unarmored) ed25519 public key managed via GPG. Similarly, the signature is expected to be an (unarmored) signature produced by signing the 32 bytes hex `MESSAGE` via gpg, using the corresponding private key.
+
+This armored public key can be exported by running:
+
+```bash
+gpg --list-keys
+```
+
+```bash
+gpg --export --armor <key-id>
+```
+
+The armored signature is produced by signing the message via gpg:
+
+```bash
+echo <message> | xxd -r -p | gpg --pinentry-mode loopback --detach-sign --armor
+```
+
+Both commands produce armored values which you should paste in `/precompile`. Then, run the test:
+
+```bash
+forge test
+```
 
 ## Usage
 
@@ -33,34 +54,6 @@ $ forge test
 $ forge fmt
 ```
 
-### Gas Snapshots
+## Feedback
 
-```shell
-$ forge snapshot
-```
-
-### Anvil
-
-```shell
-$ anvil
-```
-
-### Deploy
-
-```shell
-$ forge script script/Counter.s.sol:CounterScript --rpc-url <your_rpc_url> --private-key <your_private_key>
-```
-
-### Cast
-
-```shell
-$ cast <subcommand>
-```
-
-### Help
-
-```shell
-$ forge --help
-$ anvil --help
-$ cast --help
-```
+Please open an issue to provide any feedback. Thanks!
