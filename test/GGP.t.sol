@@ -1,14 +1,18 @@
 // SPDX-License-Identifier: UNLICENSED
 pragma solidity ^0.8.13;
 
-import {Test, console} from "forge-std/Test.sol";
+import {Test} from "forge-std/Test.sol";
 
 contract ClaimableOwnership is Test {
 
     bytes32 public constant MESSAGE = hex"ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff";
 
     address public owner;
-    bytes32 public publicKeyHash;
+    bytes32 public immutable publicKeyHash;
+
+    constructor(bytes32 _keyHash) {
+        publicKeyHash = _keyHash;
+    }
 
     function claim(bytes calldata publicKey, bytes calldata signature) external {
 
@@ -30,22 +34,15 @@ contract ClaimableOwnership is Test {
 
         owner = msg.sender;
     }
-
-    function _setupParams(bytes32 _hash) internal {
-        publicKeyHash = _hash;
-    }
 }
 
-contract GPGTest is ClaimableOwnership {
+contract GPGTest is Test {
 
-    address public alice = address(0x123);
     ClaimableOwnership target;
+    
+    address public alice = address(0x123);
 
     function setUp() public {
-
-        // Set target
-        target = ClaimableOwnership(address(this));
-
         // Get public key (bytes representation) and store its hash.
         string[] memory inputs = new string[](3);
 
@@ -54,10 +51,9 @@ contract GPGTest is ClaimableOwnership {
         inputs[2] = "precompile/publicKey/main.go";
 
         bytes memory pubKey = vm.ffi(inputs);
-        console.logBytes(pubKey);
 
-        // Store public key hash
-        _setupParams(keccak256(pubKey));
+        // Create target
+        target = new ClaimableOwnership(keccak256(pubKey));
     }
 
 
@@ -71,8 +67,6 @@ contract GPGTest is ClaimableOwnership {
 
         bytes memory result = vm.ffi(inputs);
         (bytes memory publicKey, bytes memory signature) = abi.decode(result, (bytes, bytes));
-
-        console.logBytes(publicKey);
         
         vm.prank(alice);
         target.claim(
