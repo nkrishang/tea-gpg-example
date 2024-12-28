@@ -18,8 +18,7 @@ contract ClaimableOwnership is Test {
         require(owner == address(0), "Ownership claimed");
 
         // Build precompile calldata
-        bytes memory precompileCalldata =
-            abi.encodePacked(MESSAGE, publicKey.length, publicKey, signature.length, signature);
+        bytes memory precompileCalldata = abi.encode(MESSAGE, publicKey, signature);
 
         // Simulate precompile call
         string[] memory inputs = new string[](4);
